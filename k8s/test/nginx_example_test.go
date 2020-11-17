@@ -57,11 +57,20 @@ func TestKubernetesHelloWorldExample(t *testing.T) {
 	//Verify that the ingress is configured and available
 	test_structure.RunTestStage(t, "ingress_check", func() {
 		ingress := k8s.GetIngress(t, options, "example-ingress")
+		available := k8s.IsIngressAvailable(ingress)
 		require.Equal(t, ingress.Name, "example-ingress")
+		require.True(t, available)
 	})
 
 	// Confirm the ingress and underlying K8s resources work as desired
 	test_structure.RunTestStage(t, "http_check", func() {
-		http_helper.HttpGetWithRetry(t, "http://localhost/foo", nil, 200, "foo", 30, 3*time.Second)
+		ingress := k8s.GetIngress(t, options, "example-ingress")
+		hostname := ingress.Status.LoadBalancer.Ingress[0].Hostname
+		url_foo := fmt.Sprintf("http://%s/foo", hostname)
+		url_bar := fmt.Sprintf("http://%s/bar", hostname)
+		// Check for path "foo"
+		http_helper.HttpGetWithRetry(t, url_foo, nil, 200, "foo", 30, 3*time.Second)
+		// Check for path "bar"
+		http_helper.HttpGetWithRetry(t, url_bar, nil, 200, "bar", 30, 3*time.Second)
 	})
 }

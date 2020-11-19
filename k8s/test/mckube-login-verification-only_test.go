@@ -17,6 +17,31 @@ import (
 
 const ns string = "kube-system"
 const ing string = "mckube-login-mckube-login"
+const master_desired int = 3
+const etcd_desired int = 3
+
+func TestAvailableNodes(t *testing.T) {
+	options := k8s.NewKubectlOptions("", "", ns)
+
+	//Verify the worker nodes
+	test_structure.RunTestStage(t, "node_check", func() {
+
+		nodes := k8s.GetReadyNodes(t, options)
+		var etcd_actual int = 0
+		var master_actual int = 0
+		for _, node := range nodes {
+			if node.Labels["kubernetes.io/role"] == "etcd" {
+				etcd_actual++
+			}
+			if node.Labels["kubernetes.io/role"] == "master" {
+				master_actual++
+			}
+		}
+		//Assertion
+		require.Equal(t, master_desired, master_actual)
+		require.Equal(t, etcd_desired, etcd_actual)
+	})
+}
 
 func TestMckubeLogin(t *testing.T) {
 	options := k8s.NewKubectlOptions("", "", ns)
@@ -25,7 +50,8 @@ func TestMckubeLogin(t *testing.T) {
 	test_structure.RunTestStage(t, "ingress_check", func() {
 		ingress := k8s.GetIngress(t, options, ing)
 		available := k8s.IsIngressAvailable(ingress)
-		require.Equal(t, ingress.Name, ing)
+		//Assertion
+		require.Equal(t, ing, ingress.Name)
 		require.True(t, available)
 	})
 
@@ -35,6 +61,7 @@ func TestMckubeLogin(t *testing.T) {
 		hostname := ingress.Spec.Rules[0].Host
 		url := fmt.Sprintf("https://%s", hostname)
 		_, body, _ := http_helper.HttpGetE(t, url, nil)
+		//Assertion
 		require.Contains(t, body, "Kubernetes Login")
 	})
 }

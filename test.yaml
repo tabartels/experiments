@@ -1,0 +1,8 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  namespace: test
+  name: nginx-deployment-rwo
+  labels:
+    -  app: nginx-rwo

@@ -28,7 +28,7 @@ jobs:
       run: go vet ./...
     - name: Test
       run: |
-        go test -v 
+        go test -v
         go test -coverprofile=coverage.out
         go tool cover -func=coverage.out
     - name: Build

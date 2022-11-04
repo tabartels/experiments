@@ -6,6 +6,9 @@ repos:
       - id: end-of-file-fixer
       - id: check-yaml
       - id: check-json
+      - id: detect-aws-credentials
+      - id: check-merge-conflict
+      - id: detect-private-key
   - repo: https://github.com/dnephin/pre-commit-golang
     rev: v0.5.1
     hooks:
